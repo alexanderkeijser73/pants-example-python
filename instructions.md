@@ -102,7 +102,7 @@
 
     pex_binary(
       name="main_pex_binary",
-      source="main.py",
+      entry_point="main.py",
     )
     ```
 2. Build the binary and package it:
