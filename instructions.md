@@ -1,7 +1,12 @@
 # Instructions
 
 ## Installation
-1. Clone the repository and cd into it.
+1. Clone the repository and `cd` into it.
+   ```bash
+   git clone https://github.com/alexanderkeijser73/pants-example-python
+   cd pants-example-python
+   git checkout from-scratch
+   ```
 2. Install pants in a docker container.
     ```
     docker build -t pants-docker-installation .
