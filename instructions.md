@@ -7,13 +7,17 @@
    cd pants-example-python
    git checkout from-scratch
    ```
-2. Install pants in a docker container.
-    ```
+2. Install the pants binary. You have two options:
+
+   Install pants in a docker container:
+
+   ```
     docker build -t pants-docker-installation .
     docker run --name=pants-example-python -v $(pwd):/app -itd pants-docker-installation &&\
     alias pants='docker exec pants-example-python pants'
     ```
-3. Install with brew.
+   Install with brew: 
+       
     ```
     brew install pants
     ```
