@@ -10,7 +10,7 @@
 2. Install pants in a docker container.
     ```
     docker build -t pants-docker-installation .
-    docker run --name=pants-example-python -v $(pwd):/app -d pants-docker-installation &&\
+    docker run --name=pants-example-python -v $(pwd):/app -itd pants-docker-installation &&\
     alias pants='docker exec pants-example-python pants'
     ```
 3. Install with brew.
