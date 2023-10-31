@@ -158,16 +158,16 @@ docker_image(
 )
 ```
 
-5. Build the image:
+6. Build the image:
 ```bash
 pants package helloworld:main_docker_image
 ```
 
-6. Show that the image exists locally:
+7. Show that the image exists locally:
 ```bash
 docker images | grep main_docker_image
 ```
-7. Run it:
+8. Run it:
 ```
 docker run --rm main_docker_image 
 ```
