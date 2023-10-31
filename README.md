@@ -9,7 +9,7 @@
    ```
 2. Install the pants binary. You have two options:
 
-   Install pants in a docker container:
+   Install pants in a docker container (recommended):
 
    ```
     docker build -t pants-docker-installation .
