@@ -154,6 +154,11 @@ backend_packages.add = [
 ```bash
 pants package helloworld:main_docker_image
 ```
+
+## Clean Up
+```
+docker rm --force pants-example-python
+```
 6. Show that the image exists locally:
 ```bash
 docker images | grep main_docker_image
