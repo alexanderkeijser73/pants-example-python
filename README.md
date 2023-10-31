@@ -1,176 +1,164 @@
-# example-python
-An example repository to demonstrate Python support in Pants.
+# Instructions
 
-See [pantsbuild.org](https://www.pantsbuild.org/docs) for much more detailed documentation.
+## Installation
+1. Clone the repository and `cd` into it.
+   ```bash
+   git clone https://github.com/alexanderkeijser73/pants-example-python
+   cd pants-example-python
+   git checkout from-scratch
+   ```
+2. Install the pants binary. You have two options:
 
-This is only one possible way of laying out your project with Pants. See 
-[pantsbuild.org/docs/source-roots#examples](https://www.pantsbuild.org/docs/source-roots#examples) for some other
-example layouts.
+   Install pants in a docker container:
 
-# Running Pants
+   ```
+    docker build -t pants-docker-installation .
+    docker run --name=pants-example-python -v $(pwd):/app -itd pants-docker-installation &&\
+    alias pants='docker exec pants-example-python pants'
+    ```
+   Install with brew: 
+       
+    ```
+    brew install pants
+    ```
 
-You run Pants goals using the `pants` launcher binary, which will bootstrap the
-version of Pants configured for this repo if necessary.
+## Inspect the repository
+- There is a pyhon package, `helloworld`, that contains the following:
+    - a script, main.py that runs a simple program
+    - a subpackage `translator`, that translates greetings into different languages.
+    - a subpackage `greet`, that implements functionality to display a greeting.
+    - tests for both packages.
 
-See [here](https://www.pantsbuild.org/docs/installation) for how to install the `pants` binary.
+## Pants targets
+1. Show which targets exist in the project:
+    ```
+    pants list ::
+    ```
+2. Generate BUILD files:
+    ```
+    pants tailor ::
+    ```
 
-> :question: Running with Apple Silicon and/or macOS? You will want to make changes to the `search_path` and
-`interpreter_constraints` values in `pants.toml` before running `pants` - there is guidance in `pants.toml`
-for those settings.
+## Show dependencies
+1. Show direct dependencies of main.py:
+    ```
+    pants dependencies helloworld/main.py
+    ```
+2. Show transitive dependencies of main.py:
+    ```
+    pants dependencies --transitive helloworld/main.py 
+    ```
+3. Show which targets direcltly depend on main.py:
+    ```
+    pants dependents helloworld/main.py 
+    ```
+4. Get information about a target:
+    ```
+    pants peek helloworld:helloworld
+    ```
 
-Use `pants --version` to see the version of Pants configured for the repo (which you can also find
-in `pants.toml`).
 
-# Goals
+## Executing targets
+1. Run main.py:
+    ```
+    pants run helloworld/main.py
+    ```
+    Results in error because we don't have a target for translations.json!
+2. Fix it by adding a resource target for translations.json:
+    - go to greet/BUILD
+    - add a resource target for translations.json
+    ```
+    python_sources(dependencies=[":translations-json"])
 
-Pants commands are called _goals_. You can get a list of goals with
+    resource(
+      name="translations-json",
+      source="translations.json",
+    )
+    ```
+3. Try running main again:
+    ```
+    pants run helloworld/main.py
+    ```
 
-```
-pants help goals
-```
+  Success :)
 
-# Targets
 
-Targets are a way of setting metadata for some part of your code, such as timeouts for tests and 
-entry points for binaries. Targets have types like `python_source`, `resources`, and 
-`pex_binary`. They are defined in `BUILD` files.
+## Running tests
+1. Run all tests:
+    ```
+    pants test ::
+    ``` 
+2. Run only tests affected by changes:
+    - check out the main branch
+    - make a change to one of the files
+    - run pants list --changed-since=origin/main
+    - run pants test --changed-since=origin/main
 
-Pants goals can be invoked on targets or directly on source files (which is often more intuitive and convenient).
-In the latter case, Pants locates target metadata for the source files as needed.
-
-## File specifications
-
-Invoking goals on files is straightforward, e.g.,
-
-```
-pants test helloworld/greet/greeting_test.py
-```
-
-You can use globs:
-
-```
-pants lint helloworld/greet/*.py
-```
-
-But note that these will be expanded by your shell, so this is equivalent to having used
-
-```
-pants lint helloworld/greet/__init__.py helloworld/greet/greeting.py helloworld/greet/greeting_test.py
-```
-
-If you want Pants itself to expand the globs (which is sometimes necessary), you must quote them in the shell:
-
-```
-pants lint 'helloworld/greet/*.py'
-```
-
-You can run on all changed files:
-
-```
-pants --changed-since=HEAD lint
-```
-
-You can run on all changed files, and any of their "dependees":
-
-```
-pants --changed-since=HEAD --changed-dependees=transitive test
-```
-
-## Target specifications
-
-Targets are referenced on the command line using their address, of the form `path/to/dir:name`, e.g.,
-
-```
-pants lint helloworld/greet:lib
-```
-
-You can glob over all targets in a directory with a single trailing `:`, or over all targets in a directory
-and all its subdirectories with a double trailing `::`, e.g.,
-
-```
-pants lint helloworld::
-```
-
-## Globbing semantics
-
-When you glob over files or targets, Pants knows to ignore ones that aren't relevant to the requested goal.
-For example, if you run the `test` goal over a set of files that includes non-test files, Pants will just ignore
-those, rather than error. So you can safely do things like
-
-```
-pants test ::
-```
-
-To run all tests.
-
-# Example Goals
-
-Try these out in this repo!
-
-## List targets
-
-```
-pants list ::  # All targets.
-pants list 'helloworld/**/*.py'  # Just targets containing Python code.
-```
-
-## Run linters and formatters
-
-```
-pants lint ::
-pants fmt helloworld/greet::
-```
-
-## Run MyPy
-
-```
-pants check ::
-```
-
-## Run tests
-
-```
-pants test ::  # Run all tests in the repo.
-pants test --output=all ::  # Run all tests in the repo and view pytest output even for tests that passed (you can set this permanently in pants.toml).
-pants test helloworld/translator:tests  # Run all the tests in this target.
-pants test helloworld/translator/translator_test.py  # Run just the tests in this file.
-pants test helloworld/translator/translator_test.py -- -k test_unknown_phrase  # Run just this one test by passing through pytest args.
-```
 
 ## Create a PEX binary
+1. Add a pex_binary target for main.py:
+    ```helloworld/BUILD
+    python_sources()
 
+    pex_binary(
+      name="main_pex_binary",
+      entry_point="main.py",
+    )
+    ```
+2. Build the binary and package it:
+    ```
+    pants package helloworld:main_pex_binary
+    ```
+3. Inspect the resulting file in dist/ directory:
+
+    ```
+    unzip -l dist/helloworld/main_pex_binary.pex
+    ```
+4. Execute it:
+    ```
+    ./dist/helloworld/main_pex_binary.pex
+    ```
+
+
+## Build Docker image for main.py
+Note this only works if you have installed pants locally, since pants needs access to the Docker daemon.
+`unalias` pants
+1. Create Dockerfile:
+
+```bash
+touch helloworld/Dockerfile
 ```
-pants package helloworld/main.py
+2. Paste the following into Dockerfile:
+```
+FROM python:3.9-slim
+COPY helloworld/pex_binary.pex ./app
+ENTRYPOINT ["./app"]
 ```
 
-## Run a binary directly
+3. Add docker_image target to helloworld/BUILD:
 
-```
-pants run helloworld/main.py
-```
+```helloworld/BUILD
+...
 
-## Open a REPL
-
+docker_image("main_docker_image")
 ```
-pants repl helloworld/greet:lib  # The REPL will have all relevant code and dependencies on its sys.path.
-pants repl --shell=ipython helloworld/greet:lib --no-pantsd  # To use IPython, you must disable Pantsd for now.
-```
+4. Enable the docker backend in pants.toml:
+```toml
 
-## Build a wheel / generate `setup.py`
-
-This will build both a `.whl` bdist and a `.tar.gz` sdist.
-
+backend_packages.add = [
+  ...
+  "pants.backend.docker"
+]
 ```
-pants package helloworld/translator:dist
+5. Build the image:
+```bash
+pants package helloworld:main_docker_image
 ```
-
-## Count lines of code
-
+6. Show that the image exists locally:
+```bash
+docker images | grep main_docker_image
 ```
-pants count-loc '**/*'
+7. Run it:
 ```
-## Create virtualenv for IDE integration
-
-```
-pants export ::
+docker run --rm main_docker_image 
 ```
