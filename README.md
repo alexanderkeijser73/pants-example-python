@@ -38,6 +38,7 @@
     ```
     pants tailor ::
     ```
+3. Now run `pants list ::` again 👀
 
 ## Show dependencies
 1. Show direct dependencies of main.py:
@@ -89,16 +90,14 @@
     pants test ::
     ``` 
 2. Run only tests affected by changes:
-    - check out the main branch
     - make a change to one of the files
-    - run pants list --changed-since=origin/main
-    - run pants test --changed-since=origin/main
+    - run `pants test ::` again
+    - unaffected tests should be cached (memoized)
 
 
 ## Create a PEX binary
 1. Add a pex_binary target for main.py:
     ```helloworld/BUILD
-    python_sources()
 
     pex_binary(
       name="main_pex_binary",
@@ -109,6 +108,7 @@
     ```
     pants package helloworld:main_pex_binary
     ```
+    Do you get a `PermissionError`? run again with `sudo`
 3. Inspect the resulting file in dist/ directory:
 
     ```
@@ -118,6 +118,7 @@
     ```
     ./dist/helloworld/main_pex_binary.pex
     ```
+    Note: this only works if you have Python 3.9 installed on your machine
 
 
 ## Build Docker image for main.py
@@ -131,18 +132,11 @@ touch helloworld/Dockerfile
 2. Paste the following into Dockerfile:
 ```
 FROM python:3.9-slim
-COPY helloworld/pex_binary.pex ./app
+COPY helloworld/main_pex_binary.pex ./app
 ENTRYPOINT ["./app"]
 ```
 
-3. Add docker_image target to helloworld/BUILD:
-
-```helloworld/BUILD
-...
-
-docker_image("main_docker_image")
-```
-4. Enable the docker backend in pants.toml:
+3. Enable the docker backend in pants.toml:
 ```toml
 
 backend_packages.add = [
@@ -150,15 +144,25 @@ backend_packages.add = [
   "pants.backend.docker"
 ]
 ```
+
+4. Add docker image target by running pants tailor:
+
+```
+pants tailor ::
+```
+5. Change the name of the Docker target in `helloworld/BUILD`, otherwise it defaults to `docker`:
+
+```
+docker_image(
+    name="main_docker_image",
+)
+```
+
 5. Build the image:
 ```bash
 pants package helloworld:main_docker_image
 ```
 
-## Clean Up
-```
-docker rm --force pants-example-python
-```
 6. Show that the image exists locally:
 ```bash
 docker images | grep main_docker_image
@@ -166,4 +170,10 @@ docker images | grep main_docker_image
 7. Run it:
 ```
 docker run --rm main_docker_image 
+```
+
+
+## Clean Up
+```
+docker rm --force pants-example-python
 ```
