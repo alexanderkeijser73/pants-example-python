@@ -125,7 +125,7 @@
 
 ## Build Docker image for main.py
 Note this only works if you have installed pants locally, since pants needs access to the Docker daemon.
-`unalias` pants
+
 1. Create Dockerfile:
 
 ```bash
