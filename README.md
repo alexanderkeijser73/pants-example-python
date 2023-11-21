@@ -13,7 +13,7 @@
    Install with brew (recommended): 
        
     ```
-    brew install pants
+    brew install pantsbuild/tap/pants
     ```
 
    Install pants in a docker container:
