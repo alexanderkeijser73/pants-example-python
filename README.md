@@ -9,17 +9,19 @@
    ```
 2. Install the pants binary. You have two options:
 
-   Install pants in a docker container (recommended):
+   
+   Install with brew (recommended): 
+       
+    ```
+    brew install pants
+    ```
+
+   Install pants in a docker container:
 
    ```
     docker build -t pants-docker-installation .
     docker run --name=pants-example-python -v $(pwd):/app -itd pants-docker-installation &&\
     alias pants='docker exec pants-example-python pants'
-    ```
-   Install with brew: 
-       
-    ```
-    brew install pants
     ```
 
 ## Inspect the repository
